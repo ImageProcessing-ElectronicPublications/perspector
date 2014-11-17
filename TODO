@@ -1,0 +1,8 @@
+* GUI
+* Picture import.
+* Implement a better interpolation algorithm.
+* Add processing options:
+	-keep whole picture surrounded with background color.
+	-crop whole picture to biggest rectangle.
+	-crop to anchors, shrink picture.
+	-crop to anchors, enlarge picture and interpolate (DONE).

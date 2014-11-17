@@ -1,0 +1,43 @@
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.TH \*[manname] \*[section] "\*[date]" "\*[appname] \*[version]" "User Commands"
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH NAME
+\*[appname] - a control-point-based perspective rectification tool
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH SYNOPSIS
+.
+.SY \*[cmdname]
+.RI [ FILE ]
+.YS
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH DESCRIPTION
+.
+\*[appname] warps a picture so that the 4 pixels set as control points
+become the corners of an axis-aligned rectangle.
+.
+This proves very handy to rectify rectangle-shaped objects such as building
+facades.
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.SH USAGE
+.
+Left-click four control points on the picture. Order does not matter. When you
+process it, the picture will be transformed in memory. Write the file to see
+changes.
+.
+.P
+In some some cases (e.g. aligned points), processing will be impossible. Just
+move the points around and try again.
+.
+.P
+You can remove a control point by right-clicking on it.
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+.
+.SH AUTHORS
+Copyright \(co \*[year] \*[authors]
+.
+.\""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
