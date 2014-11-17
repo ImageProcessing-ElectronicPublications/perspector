@@ -1,5 +1,6 @@
-* GUI
-* Picture import.
+* GUI: try some other toolkit.
+* Picture preview.
+* GUI: sides of drawable should not be drawable.
 * Implement a better interpolation algorithm.
 * Add processing options:
 	-keep whole picture surrounded with background color.
