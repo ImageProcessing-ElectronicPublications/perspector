@@ -62,7 +62,7 @@ install:
 	${INSTALL_DIR} ${DESTDIR}${bindir}
 	${INSTALL} ${srcdir}/${cmdname} ${DESTDIR}${bindir}/${cmdname}
 	${INSTALL_DIR} ${DESTDIR}${mandir}/man1
-	${INSTALL_DATA} doc/${cmdname}.1.gz ${DESTDIR}${mandir}/man1/${cmdname}.1.gz
+	${INSTALL_DATA} ${docsrcdir}/${cmdname}.1 ${DESTDIR}${mandir}/man1/${cmdname}.1
 	${INSTALL_DIR}  ${DESTDIR}${licensedir}/${cmdname}
 	${INSTALL_DATA} LICENSE ${DESTDIR}${licensedir}/${cmdname}/LICENSE
 
