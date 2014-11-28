@@ -26,7 +26,6 @@ typedef struct {
 typedef struct {
 	pixel pixels[4];
 	size_t count;
-	bool aligned;
 } pixelset;
 
 /*
