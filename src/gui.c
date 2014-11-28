@@ -263,13 +263,21 @@ static gboolean event_button_press(GtkWidget *drawable, GdkEventButton *event, g
 		return FALSE;
 	}
 
+	coord width = cairo_image_surface_get_width(bg);
+	coord height = cairo_image_surface_get_height(bg);
+	double z = zoom_value(zoom);
+	coord x = (coord)(event->x / z);
+	coord y = (coord)(event->y / z);
+
+	/* If we are outside the surface, do nothing. */
+	if (x >= width || y >= height) {
+		return FALSE;
+	}
+
 	if (event->button == GDK_BUTTON_PRIMARY) {
 		if (anchors.count >= sizeof anchors.pixels / sizeof anchors.pixels[0]) {
 			gtk_label_set_text(GTK_LABEL(status), "Max number of anchors reached.");
 		} else {
-			double z = zoom_value(zoom);
-			coord x = (coord)(event->x / z);
-			coord y = (coord)(event->y / z);
 			size_t i;
 			for (i = 0; i < anchors.count; i++) {
 				if (anchors.pixels[i].x == x && anchors.pixels[i].y == y) {
@@ -283,9 +291,6 @@ static gboolean event_button_press(GtkWidget *drawable, GdkEventButton *event, g
 			anchors.count++;
 		}
 	} else if (event->button == GDK_BUTTON_SECONDARY) {
-		double z = zoom_value(zoom);
-		coord x = (coord)(event->x / z);
-		coord y = (coord)(event->y / z);
 		coord radius = BRUSHSZ / 2 / z;
 
 		/* We loop backward in case rectangles are stack, then last one gets erased
