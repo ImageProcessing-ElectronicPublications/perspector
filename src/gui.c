@@ -230,10 +230,9 @@ static gboolean event_draw(GtkWidget *widget, cairo_t *cr, gpointer data) {
 	return FALSE;
 }
 
-static gboolean event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data) {
+static gboolean event_scroll(GtkWidget *widget, GdkEvent *event, gpointer zoom_status) {
 	(void)widget;
 	(void)event;
-	(void)user_data;
 
 	GdkScrollDirection direction;
 	gboolean scroll_status = gdk_event_get_scroll_direction(event, &direction);
@@ -245,6 +244,12 @@ static gboolean event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_d
 		}
 		clear_surface();
 		gtk_widget_queue_draw(widget);
+
+		#define ZOOM_TEXT_LEN 128
+		char text[ZOOM_TEXT_LEN];
+		snprintf(text, ZOOM_TEXT_LEN, "x%g", zoom_value(zoom));
+		gtk_label_set_text(GTK_LABEL(zoom_status), text);
+
 		return TRUE;
 	}
 
@@ -489,16 +494,17 @@ int main(int argc, char *argv[]) {
 
 	drawable_area = gtk_drawing_area_new();
 
-	GtkWidget *coord_display = gtk_label_new("(0, 0)");
+	GtkWidget *coord_status = gtk_label_new("(0, 0)");
+	GtkWidget *zoom_status = gtk_label_new("x1");
 	status = gtk_label_new("");
 
 	/* Signals used to handle the backing surface */
 	g_signal_connect(drawable_area, "draw", G_CALLBACK(event_draw), NULL);
 	g_signal_connect(drawable_area, "configure-event", G_CALLBACK(event_configure), NULL);
 	/* Event signals */
-	g_signal_connect(drawable_area, "motion-notify-event", G_CALLBACK(event_motion_notify), coord_display);
+	g_signal_connect(drawable_area, "motion-notify-event", G_CALLBACK(event_motion_notify), coord_status);
 	g_signal_connect(drawable_area, "button-press-event", G_CALLBACK(event_button_press), NULL);
-	g_signal_connect(drawable_area, "scroll-event", G_CALLBACK(event_scroll), NULL);
+	g_signal_connect(drawable_area, "scroll-event", G_CALLBACK(event_scroll), zoom_status);
 	/* Ask to receive events the drawing area doesn't normally subscribe to. */
 	gtk_widget_set_events(drawable_area, gtk_widget_get_events(drawable_area)
 		| GDK_BUTTON_PRESS_MASK
@@ -538,7 +544,8 @@ int main(int argc, char *argv[]) {
 
 	GtkWidget *statusbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	/* gtk_widget_set_size_request (statusbox, -1, 20); */
-	box_append(statusbox, coord_display);
+	box_append(statusbox, zoom_status);
+	box_append(statusbox, coord_status);
 	box_prepend(statusbox, status);
 
 	GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
