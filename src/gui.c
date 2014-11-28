@@ -164,6 +164,9 @@ static void load_image(const char *path) {
 		bg = oldbg;
 	} else {
 		clear_surface();
+		gtk_label_set_text(GTK_LABEL(status), "File loaded.");
+		/* Reset anchors */
+		anchors.count = 0;
 		char *outname = file_suffix(path, "-new");
 		gtk_entry_set_text(GTK_ENTRY(out), outname);
 		free(outname);
