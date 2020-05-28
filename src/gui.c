@@ -36,8 +36,6 @@ static cairo_surface_t *bg = NULL;
 /* Surface to store result of transform */
 static cairo_surface_t *sink = NULL;
 
-static GtkWidget *ratio_width;
-static GtkWidget *ratio_height;
 static GtkWidget *status;
 static GtkWidget *drawable_area;
 static GtkWidget *out;
@@ -408,6 +406,13 @@ static void event_process(GtkWidget *widget, gpointer data)
 {
     (void)widget;
     (void)data;
+    cairo_format_t format;
+    coord sink_width, sink_height;
+    size_t i;
+    coord minx , miny, maxx, maxy;
+    coord bg_width, bg_height;
+    unsigned char *bg_data, *sink_data;
+    bool ustatus;
 
     if (anchors.count != 4)
     {
@@ -415,7 +420,7 @@ static void event_process(GtkWidget *widget, gpointer data)
         return;
     }
 
-    cairo_format_t format = cairo_image_surface_get_format(bg);
+    format = cairo_image_surface_get_format(bg);
     if (format != CAIRO_FORMAT_RGB24 && format != CAIRO_FORMAT_ARGB32)
     {
         gtk_label_set_text(GTK_LABEL(status), "Unsupported format.");
@@ -427,12 +432,11 @@ static void event_process(GtkWidget *widget, gpointer data)
 
     /* Initialize sink. Width and height is the smallest rectangle containing */
     /* the anchors and fitting the ratio. */
-    coord sink_width, sink_height;
-    size_t i;
-    coord minx = anchors.pixels[0].x;
-    coord miny = anchors.pixels[0].y;
-    coord maxx = anchors.pixels[0].x;
-    coord maxy = anchors.pixels[0].y;
+
+    minx = anchors.pixels[0].x;
+    miny = anchors.pixels[0].y;
+    maxx = anchors.pixels[0].x;
+    maxy = anchors.pixels[0].y;
     for (i = 0; i < anchors.count; i++)
     {
         if (anchors.pixels[i].x < minx)
@@ -460,40 +464,16 @@ static void event_process(GtkWidget *widget, gpointer data)
     sink_width = maxx - minx;
     sink_height = maxy - miny;
 
-    errno = 0;
-    double ratio_w = strtod(gtk_entry_get_text(GTK_ENTRY(ratio_width)), NULL);
-    if (errno || ratio_w <= 0)
-    {
-        gtk_label_set_text(GTK_LABEL(status), "Wrong value for width.");
-        return;
-    }
-    double ratio_h = strtod(gtk_entry_get_text(GTK_ENTRY(ratio_height)), NULL);
-    if (errno || ratio_h <= 0)
-    {
-        gtk_label_set_text(GTK_LABEL(status), "Wrong value for height.");
-        return;
-    }
-
-    double ratio = ratio_w / ratio_h;
-    if (sink_height < sink_height * ratio)
-    {
-        sink_height = sink_width * ratio;
-    }
-    else if (sink_height > sink_height * ratio)
-    {
-        sink_width = sink_height * ratio_h / ratio_w;
-    }
-
     /* Background data. */
-    unsigned char *bg_data = cairo_image_surface_get_data(bg);
-    coord bg_width = cairo_image_surface_get_width(bg);
-    coord bg_height = cairo_image_surface_get_height(bg);
+    bg_data = cairo_image_surface_get_data(bg);
+    bg_width = cairo_image_surface_get_width(bg);
+    bg_height = cairo_image_surface_get_height(bg);
 
     sink = cairo_surface_create_similar_image(bg, CAIRO_FORMAT_ARGB32, bg_width, bg_height);
-    unsigned char *sink_data = cairo_image_surface_get_data(sink);
+    sink_data = cairo_image_surface_get_data(sink);
 
     /* Modify the image. */
-    bool ustatus = perspector((color *)sink_data, sink_width, sink_height, (color *)bg_data, bg_width, bg_height, &anchors);
+    ustatus = perspector((color *)sink_data, sink_width, sink_height, (color *)bg_data, bg_width, bg_height, &anchors);
     if (ustatus)
     {
         gtk_label_set_text(GTK_LABEL(status), "Transformation applied.");
@@ -602,12 +582,6 @@ int main(int argc, char *argv[])
     g_signal_connect(open, "clicked", G_CALLBACK(event_open), NULL);
     GtkWidget *process = gtk_button_new_with_label("Process");
     g_signal_connect(process, "clicked", G_CALLBACK(event_process), NULL);
-    GtkWidget *ratio_width_label = gtk_label_new("Width");
-    ratio_width = gtk_entry_new();
-    GtkWidget *ratio_height_label = gtk_label_new("Height");
-    ratio_height = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(ratio_width), "1");
-    gtk_entry_set_text(GTK_ENTRY(ratio_height), "1");
     out = gtk_entry_new();
 
     GtkWidget *write = gtk_button_new_with_label("Write");
@@ -618,12 +592,6 @@ int main(int argc, char *argv[])
     GtkWidget *menubox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_set_spacing(GTK_BOX(menubox), 2);
     box_prepend(menubox, open);
-    box_prepend(menubox, ratio_width_label);
-    box_prepend(menubox, ratio_width);
-    /* TODO: Filename box should be the only one to extend. */
-    /* gtk_widget_set_size_request (ratio_width, 50, -1); */
-    box_prepend(menubox, ratio_height_label);
-    box_prepend(menubox, ratio_height);
     box_prepend(menubox, process);
     gtk_box_pack_start(GTK_BOX(menubox), out, TRUE, TRUE, 0);
     box_prepend(menubox, write);
