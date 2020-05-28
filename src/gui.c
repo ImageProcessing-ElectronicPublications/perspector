@@ -194,7 +194,6 @@ static void load_image(const char *path)
         gtk_entry_set_text(GTK_ENTRY(out), outname);
         free(outname);
     }
-
 }
 
 /******************************************************************************/
@@ -453,6 +452,10 @@ static void event_process(GtkWidget *widget, gpointer data)
             maxy = anchors.pixels[i].y;
         }
     }
+    anchors.minx = minx;
+    anchors.miny = miny;
+    anchors.maxx = maxx;
+    anchors.maxy = maxy;
     /* The following cannot be negative. */
     sink_width = maxx - minx;
     sink_height = maxy - miny;
@@ -481,13 +484,13 @@ static void event_process(GtkWidget *widget, gpointer data)
         sink_width = sink_height * ratio_h / ratio_w;
     }
 
-    sink = cairo_surface_create_similar_image(bg, CAIRO_FORMAT_ARGB32, sink_width, sink_height);
-    unsigned char *sink_data = cairo_image_surface_get_data(sink);
-
     /* Background data. */
     unsigned char *bg_data = cairo_image_surface_get_data(bg);
     coord bg_width = cairo_image_surface_get_width(bg);
     coord bg_height = cairo_image_surface_get_height(bg);
+
+    sink = cairo_surface_create_similar_image(bg, CAIRO_FORMAT_ARGB32, bg_width, bg_height);
+    unsigned char *sink_data = cairo_image_surface_get_data(sink);
 
     /* Modify the image. */
     bool ustatus = perspector((color *)sink_data, sink_width, sink_height, (color *)bg_data, bg_width, bg_height, &anchors);

@@ -512,6 +512,8 @@ bool perspector(
     coord radius, index;
     double red_buf, green_buf, blue_buf, alpha_buf;
     int count;
+    coord minx = anchors->minx;
+    coord miny = anchors->miny;
     bool status = make_transform_matrix(transform_matrix, anchors, sink_width, sink_height);
     /* TODO: report status message. */
     if (!status)
@@ -551,7 +553,7 @@ bool perspector(
     }
 
     /* We use the following mask to know which pixel in the sink has been set. */
-    bool *transformed_mask = calloc(sink_width * sink_height, sizeof (bool));
+    bool *transformed_mask = calloc(bg_width * bg_height, sizeof (bool));
     if (!transformed_mask)
     {
         fprintf(stderr, "Transformed mask allocation error.\n");
@@ -570,13 +572,14 @@ bool perspector(
                            0.0, &pout_vv.vector);
 
             /* 'round' is required since a cast floors the value. */
-            x2 = round(pout[0] / pout[2]);
-            y2 = round(pout[1] / pout[2]);
+            x2 = minx + round(pout[0] / pout[2]);
+            y2 = miny + round(pout[1] / pout[2]);
 
-            if (x2 >= 0 && y2 >= 0 && x2 < sink_width && y2 < sink_height)
+            if (x2 >= 0 && y2 >= 0 && x2 < bg_width && y2 < bg_height)
             {
-                sink_data[y2 * sink_width + x2] = bg_data[y * bg_width + x];
-                transformed_mask[y2 * sink_width + x2] = true;
+                index = y2 * bg_width + x2;
+                sink_data[index] = bg_data[y * bg_width + x];
+                transformed_mask[index] = true;
             }
         }
     }
@@ -588,11 +591,11 @@ bool perspector(
     http://en.wikipedia.org/wiki/Multivariate_interpolation#Irregular_grid_.28scattered_data.29
     */
 
-    for (x = 0; x < sink_width; x++)
+    for (x = 0; x < bg_width; x++)
     {
-        for (y = 0; y < sink_height; y++)
+        for (y = 0; y < bg_height; y++)
         {
-            if (!transformed_mask[y * sink_width + x])
+            if (!transformed_mask[y * bg_width + x])
             {
                 /* We will sum the colors of all the pixels in the radius to compute the
                 * mean. We need intermediate variables for colors to prevent
@@ -608,14 +611,14 @@ bool perspector(
                     y_max = y + radius;
                     x_min = (x_min < 0) ? 0 : x_min;
                     y_min = (y_min < 0) ? 0 : y_min;
-                    x_max = (x_max >= sink_width) ? (sink_width - 1) : x_max;
-                    y_max = (y_max >= sink_height) ? (sink_height - 1) : y_max;
+                    x_max = (x_max >= bg_width) ? (bg_width - 1) : x_max;
+                    y_max = (y_max >= bg_height) ? (bg_height - 1) : y_max;
 
                     for (i = x_min; i <= x_max; i += x_max - x_min)
                     {
                         for (j = y_min; j <= y_max; j++)
                         {
-                            index = j * sink_width + i;
+                            index = j * bg_width + i;
                             if (transformed_mask[index])
                             {
                                 count++;
@@ -631,7 +634,7 @@ bool perspector(
                     {
                         for (i = x_min; i <= x_max; i++)
                         {
-                            index = j * sink_width + i;
+                            index = j * bg_width + i;
                             if (transformed_mask[index])
                             {
                                 count++;
@@ -648,7 +651,7 @@ bool perspector(
                 green_buf /= count;
                 blue_buf /= count;
                 alpha_buf /= count;
-                index = y * sink_width + x;
+                index = y * bg_width + x;
                 sink_data[index].red = (char)red_buf;
                 sink_data[index].green = (char)green_buf;
                 sink_data[index].blue = (char)blue_buf;

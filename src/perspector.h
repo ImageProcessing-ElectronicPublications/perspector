@@ -27,6 +27,7 @@ typedef struct
 {
     pixel pixels[4];
     size_t count;
+    coord minx, miny, maxx, maxy;
 } pixelset;
 
 /*
